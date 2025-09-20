@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+body{
+    margin: 0;
+    background: linear-gradient(to bottom right, #f5f3ff, #ede9fe);
+}
+*{
+    scroll-behavior: smooth;
+}
+button{
+    cursor: pointer;
+}
