@@ -1,159 +1,193 @@
 import React from 'react';
-import journey from '../../assets/images/about/journey.png'
-import mission from '../../assets/images/about/mission.png'
+import { motion } from 'framer-motion';
+import { Gem, Handshake, Users, Leaf, ArrowRight } from 'lucide-react';
+import journey from '../../assets/images/about/journey.png';
+import mission from '../../assets/images/about/mission.png';
 import Navbar from './Navbar';
 
 const About = () => {
+    // Shared animation variants for consistency
+    const fadeInUp = {
+        hidden: { opacity: 0, y: 40, scale: 0.95 },
+        visible: { 
+            opacity: 1, 
+            y: 0, 
+            scale: 1,
+            transition: { type: "spring", stiffness: 100, damping: 20 } 
+        }
+    };
 
-  return (
-    <>
-        <Navbar />
-        {/* // Main container with responsive padding and background */}
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-800 antialiased">
-        {/* Header Section */}
-        <header className="py-12 bg-gradient-to-r from-blue-600 to-purple-700 text-white shadow-lg rounded-b-3xl">
-            <div className="container mx-auto px-6 text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight">
-                About Our Store
-            </h1>
-            <p className="text-lg sm:text-xl max-w-3xl mx-auto opacity-90">
-                Discover the passion and purpose behind our curated collection.
-            </p>
-            </div>
-        </header>
+    const staggerContainer = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.2 }
+        }
+    };
 
-        {/* Main Content Sections */}
-        <main className="container mx-auto px-6 py-16">
+    return (
+        <div className="min-h-screen bg-[#fdfdfd] font-sans selection:bg-yellow-200">
+            <Navbar />
 
-            {/* Our Story Section */}
-            <section className="mb-16 bg-white p-8 rounded-2xl shadow-xl transform transition-all duration-300 hover:scale-[1.01]">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-blue-700 mb-8">
-                Our Story
-            </h2>
-            <div className="flex flex-col md:flex-row items-center gap-10">
-                <div className="md:w-1/2">
-                <img
-                    src={journey}
-                    alt="Our Journey"
-                    className="w-full h-auto rounded-xl shadow-lg object-cover"
-                    onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/E0F2F7/2C3E50?text=Image+Unavailable"; }}
-                />
+            {/* --- Hero Section --- */}
+            <header className="relative py-24 overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-50/50 via-transparent to-transparent -z-10"></div>
+                <div className="container mx-auto px-6 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="inline-block px-4 py-1.5 mb-6 bg-emerald-50 border border-emerald-100 rounded-full"
+                    >
+                        <span className="text-emerald-700 text-[10px] font-black uppercase tracking-[0.2em]">Our Heritage</span>
+                    </motion.div>
+                    <motion.h1 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-5xl md:text-7xl font-black text-emerald-950 leading-tight tracking-tighter"
+                    >
+                        Defining the future of <br />
+                        <span className="text-emerald-500 italic">Modern Retail.</span>
+                    </motion.h1>
+                    <motion.div 
+                        initial={{ width: 0 }} 
+                        animate={{ width: "80px" }} 
+                        className="h-2 bg-yellow-400 mx-auto mt-8 rounded-full"
+                    />
                 </div>
-                <div className="md:w-1/2 text-lg leading-relaxed text-gray-700">
-                <p className="mb-4">
-                    Founded in 2023, our store began with a simple idea: to bring
-                    high-quality, unique products directly to your doorstep. We noticed a gap
-                    in the market for carefully selected items that blend aesthetics with
-                    functionality, and we set out to fill it.
-                </p>
-                <p className="mb-4">
-                    What started as a small passion project quickly grew into a thriving
-                    online community. We believe in the power of well-made products to
-                    enhance daily life and bring joy. Every item in our collection is
-                    hand-picked, tested, and loved by our team before it makes it to our
-                    virtual shelves.
-                </p>
-                <p>
-                    We're committed to sustainable practices and supporting ethical
-                    producers, ensuring that every purchase you make not only brings you
-                    satisfaction but also contributes positively to the world.
-                </p>
-                </div>
-            </div>
-            </section>
+            </header>
 
-            {/* Our Mission Section */}
-            <section className="mb-16 bg-white p-8 rounded-2xl shadow-xl transform transition-all duration-300 hover:scale-[1.01]">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-purple-700 mb-8">
-                Our Mission
-            </h2>
-            <div className="flex flex-col md:flex-row-reverse items-center gap-10">
-                <div className="md:w-1/2">
-                <img
-                    src={mission}
-                    alt="Our Mission"
-                    className="w-full h-auto rounded-xl shadow-lg object-cover"
-                    onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/F3E8FF/4A0E6F?text=Image+Unavailable"; }}
-                />
-                </div>
-                <div className="md:w-1/2 text-lg leading-relaxed text-gray-700">
-                <p className="mb-4">
-                    Our mission is to empower our customers by providing access to
-                    exceptional products that inspire, delight, and simplify their lives.
-                    We strive to be more than just an e-commerce store; we aim to be a
-                    trusted source for quality, innovation, and thoughtful design.
-                </p>
-                <p className="mb-4">
-                    We are dedicated to fostering a seamless and enjoyable shopping
-                    experience, from browsing our catalog to receiving your order. Your
-                    satisfaction is at the heart of everything we do, and we continuously
-                    seek ways to improve and exceed your expectations.
-                </p>
-                <p>
-                    Through our carefully curated selection, we hope to help you discover
-                    items that resonate with your lifestyle and values, making every
-                    purchase a meaningful one.
-                </p>
-                </div>
-            </div>
-            </section>
+            <main className="container mx-auto px-6 pb-24">
+                
+                {/* --- Our Story Section --- */}
+                <motion.section 
+                    variants={fadeInUp}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="mb-32 grid md:grid-cols-2 gap-16 items-center"
+                >
+                    <div className="relative group">
+                        <div className="absolute -inset-4 bg-emerald-100/50 rounded-[3rem] blur-2xl group-hover:bg-yellow-100/50 transition-colors duration-700"></div>
+                        <img
+                            src={journey}
+                            alt="Our Journey"
+                            className="relative w-full aspect-square object-cover rounded-[2.5rem] shadow-2xl shadow-emerald-900/10 border-8 border-white"
+                            onError={(e) => { e.target.src="https://placehold.co/800x800/f3f5f0/065f46?text=Our+Journey"; }}
+                        />
+                    </div>
+                    <div className="space-y-6">
+                        <h2 className="text-4xl font-black text-emerald-950 tracking-tight">
+                            It started with a <span className="text-emerald-600 underline decoration-yellow-400 decoration-4 underline-offset-8">Single Vision.</span>
+                        </h2>
+                        <div className="space-y-4 text-emerald-900/70 text-lg leading-relaxed font-medium">
+                            <p>
+                                Founded in 2023, E-Shop was born from a desire to bridge the gap between 
+                                luxury aesthetics and everyday accessibility. We believed that shopping 
+                                should be an experience, not a chore.
+                            </p>
+                            <p>
+                                Every piece in our collection is curated with an obsessive attention to 
+                                detail. We don't just sell products; we sell stories that enhance your lifestyle.
+                            </p>
+                            <button className="flex items-center gap-2 text-emerald-600 font-bold hover:gap-4 transition-all group">
+                                Learn about our curation process <ArrowRight size={20} className="text-yellow-500" />
+                            </button>
+                        </div>
+                    </div>
+                </motion.section>
 
-            {/* Our Values Section */}
-            <section className="bg-white p-8 rounded-2xl shadow-xl transform transition-all duration-300 hover:scale-[1.01]">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-blue-700 mb-8">
-                Our Values
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                {/* Value 1: Quality */}
-                <div className="p-6 bg-blue-50 rounded-xl shadow-md border border-blue-200">
-                <div className="text-5xl mb-4 text-blue-600">
-                    <i className="fas fa-gem"></i> {/* Example icon, replace with lucide-react or SVG */}
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-blue-800">Quality</h3>
-                <p className="text-gray-700">
-                    We commit to offering only the highest quality products that stand
-                    the test of time and exceed expectations.
-                </p>
-                </div>
+                {/* --- Our Mission Section --- */}
+                <motion.section 
+                    variants={fadeInUp}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="mb-32 grid md:grid-cols-2 gap-16 items-center space-x-2"
+                >
+                    <div className="md:order-2 relative group">
+                        <div className="absolute -inset-4 bg-yellow-100/40 rounded-[3rem] blur-2xl"></div>
+                        <img
+                            src={mission}
+                            alt="Our Mission"
+                            className="relative w-full aspect-video object-cover rounded-[2.5rem] shadow-2xl shadow-emerald-900/10 border-8 border-white"
+                            onError={(e) => { e.target.src="https://placehold.co/800x600/fefce8/854d0e?text=Our+Mission"; }}
+                        />
+                    </div>
+                    <div className="md:order-1 space-y-6">
+                        <h2 className="text-4xl font-black text-emerald-950 tracking-tight">
+                            Beyond Just <span className="text-emerald-600">Commerce.</span>
+                        </h2>
+                        <p className="text-emerald-900/70 text-lg leading-relaxed font-medium">
+                            Our mission is to empower a global community through thoughtful design 
+                             and ethical sourcing. We are committed to a carbon-neutral future, 
+                             ensuring that your style never comes at the cost of our planet.
+                        </p>
+                        <div className="flex gap-8 py-4">
+                            <div className="text-center">
+                                <h4 className="text-3xl font-black text-emerald-950">10k+</h4>
+                                <p className="text-[10px] font-bold text-emerald-400 uppercase">Happy Clients</p>
+                            </div>
+                            <div className="text-center">
+                                <h4 className="text-3xl font-black text-emerald-950">100%</h4>
+                                <p className="text-[10px] font-bold text-emerald-400 uppercase">Sourced Ethically</p>
+                            </div>
+                        </div>
+                    </div>
+                </motion.section>
 
-                {/* Value 2: Integrity */}
-                <div className="p-6 bg-purple-50 rounded-xl shadow-md border border-purple-200">
-                <div className="text-5xl mb-4 text-purple-600">
-                    <i className="fas fa-handshake"></i> {/* Example icon */}
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-purple-800">Integrity</h3>
-                <p className="text-gray-700">
-                    Operating with transparency and honesty, we build trust with our
-                    customers and partners.
-                </p>
-                </div>
+                {/* --- Our Values Section --- */}
+                <section>
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-black text-emerald-950 tracking-tight">The Values We Live By</h2>
+                        <p className="text-emerald-700/50 font-bold uppercase text-[10px] tracking-widest mt-2">No Compromises</p>
+                    </div>
+                    <motion.div 
+                        variants={staggerContainer}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                    >
+                        {[
+                            { icon: <Gem className="text-emerald-600" size={32} />, title: "Quality", desc: "We provide products that are built to last, using materials that feel as good as they look.", color: "bg-emerald-50" },
+                            { icon: <Handshake className="text-yellow-600" size={32} />, title: "Integrity", desc: "Honesty in our pricing, transparency in our shipping, and loyalty to our customers.", color: "bg-yellow-50" },
+                            { icon: <Leaf className="text-emerald-600" size={32} />, title: "Sustainability", desc: "Our packaging is 100% recyclable. We believe in beauty without the waste.", color: "bg-emerald-50" }
+                        ].map((value, idx) => (
+                            <motion.div
+                                key={idx}
+                                variants={fadeInUp}
+                                whileHover={{ y: -10 }}
+                                className={`p-10 rounded-[2.5rem] border border-gray-50 shadow-sm hover:shadow-xl hover:shadow-emerald-900/5 transition-all duration-300 ${value.color}`}
+                            >
+                                <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm mb-6">
+                                    {value.icon}
+                                </div>
+                                <h3 className="text-2xl font-bold text-emerald-950 mb-4">{value.title}</h3>
+                                <p className="text-emerald-900/60 leading-relaxed font-medium text-sm">
+                                    {value.desc}
+                                </p>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                </section>
+            </main>
 
-                {/* Value 3: Customer Focus */}
-                <div className="p-6 bg-green-50 rounded-xl shadow-md border border-green-200">
-                <div className="text-5xl mb-4 text-green-600">
-                    <i className="fas fa-heart"></i> {/* Example icon */}
+            {/* --- Footer --- */}
+            <footer className="py-12 bg-emerald-950 text-white rounded-t-[3rem]">
+                <div className="container mx-auto px-6 text-center">
+                    <h2 className="text-2xl font-black mb-4">E-SHOP</h2>
+                    <p className="text-emerald-400 text-sm font-medium opacity-60">
+                        &copy; {new Date().getFullYear()} Boutique Excellence. All rights reserved.
+                    </p>
+                    <div className="flex justify-center gap-6 mt-6">
+                        <span className="text-xs font-bold hover:text-yellow-400 cursor-pointer transition-colors">Privacy</span>
+                        <span className="text-xs font-bold hover:text-yellow-400 cursor-pointer transition-colors">Terms</span>
+                        <span className="text-xs font-bold hover:text-yellow-400 cursor-pointer transition-colors">Support</span>
+                    </div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-3 text-green-800">Customer Focus</h3>
-                <p className="text-gray-700">
-                    Your satisfaction is our priority. We listen, adapt, and strive to
-                    provide exceptional service.
-                </p>
-                </div>
-            </div>
-            </section>
-        </main>
-
-        {/* Footer Section */}
-        <footer className="py-8 bg-gray-800 text-white text-center rounded-t-3xl mt-16">
-            <div className="container mx-auto px-6">
-            <p className="text-sm opacity-80">
-                &copy; {new Date().getFullYear()} Your E-commerce Store. All rights reserved.
-            </p>
-            </div>
-        </footer>
+            </footer>
         </div>
-    </>
-  );
+    );
 };
 
 export default About;

@@ -1,275 +1,276 @@
 import axios from 'axios';
-import React, { useEffect, useState, useMemo } from 'react'; // Import useMemo for performance
-import { FaShoppingCart, FaCheckCircle } from 'react-icons/fa';
+import React, { useEffect, useState, useMemo } from 'react';
+import { FaShoppingCart, FaCheckCircle, FaLeaf } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast, Toaster } from 'react-hot-toast';
-import { RiFilterFill, RiSearchLine } from 'react-icons/ri';
+import { RiSearchLine } from 'react-icons/ri';
 
 const Products = () => {
-    const [data, setData] = useState([]); // Stores all products fetched from API
-    const [cartItems, setCartItems] = useState([]); // Stores items currently in the user's cart
-    const [loading, setLoading] = useState(true); // Manages loading state for product data
-    const [filterCategory, setFilterCategory] = useState('All'); // Current selected category for filtering
-    const [searchTerm, setSearchTerm] = useState(''); // Current search term entered by user
+    const [data, setData] = useState([]);
+    const [cartItems, setCartItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    // Fetches all products from the backend API
+    // Animation Variants for the staggered "Flow" effect
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.08
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 30, scale: 0.9 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: {
+                type: "spring",
+                stiffness: 200,
+                damping: 18
+            }
+        },
+        exit: {
+            opacity: 0,
+            scale: 0.9,
+            transition: { duration: 0.2 }
+        }
+    };
+
     const getData = async () => {
         try {
-            setLoading(true); // Indicate loading has started
-            const res = await axios.get(import.meta.env.VITE_PRODUCT_URL, {
-                withCredentials: true, // Send cookies with the request
-            });
-            setData(res.data.product); // Update state with fetched products
+            setLoading(true);
+            const res = await axios.get(import.meta.env.VITE_PRODUCT_URL, { withCredentials: true });
+            setData(res.data.product);
         } catch (error) {
-            console.error("Product Fetch Error:", error); // Log detailed error
-            toast.error('Failed to load products. Please try again.'); // Show user-friendly error
+            toast.error('Failed to load products.');
         } finally {
-            setLoading(false); // Indicate loading has finished
+            setLoading(false);
         }
     };
 
-    // Fetches the current user's cart items from the backend API
     const fetchCartItems = async () => {
         try {
-            const res = await axios.get(import.meta.env.VITE_CART_URL, {
-                withCredentials: true,
-            });
-
-            // Fetch current user's ID for filtering cart items
-            const tokenRes = await axios.get(
-                import.meta.env.VITE_CURRENT_USER_TOKEN_URL,
-                {
-                    withCredentials: true,
-                }
-            );
-
-            // Safely get userId using optional chaining
+            const res = await axios.get(import.meta.env.VITE_CART_URL, { withCredentials: true });
+            const tokenRes = await axios.get(import.meta.env.VITE_CURRENT_USER_TOKEN_URL, { withCredentials: true });
             const userId = tokenRes?.data?.user?._id;
-
-            if (!userId) {
-                console.warn("User ID not found in token response:", tokenRes.data);
-                // Optionally, show a toast or redirect if user is not authenticated
-                return;
+            if (userId) {
+                const userCart = res.data.cart.filter((item) => item.userId === userId);
+                setCartItems(userCart);
             }
-
-            // Filter cart items to show only those belonging to the current user
-            const userCart = res.data.cart.filter(
-                (item) => item.userId === userId
-            );
-            setCartItems(userCart); // Update state with user's cart items
-        } catch (error) {
-            console.error("Cart Fetch Error:", error); // Log detailed error
-            toast.error('Failed to load cart items.'); // Show user-friendly error
-        }
+        } catch (error) { console.log(error); }
     };
 
-    // Adds a selected product to the user's cart via API call
     const addToCart = async (productId) => {
         try {
-            // First, fetch the product list again to get details of the product being added
-            const res = await axios.get(import.meta.env.VITE_PRODUCT_URL, {
-                withCredentials: true,
-            });
+            const selectedProduct = data.find((p) => p.productId === productId);
+            if (!selectedProduct) return;
 
-            const productList = res.data.product;
-            const selectedProduct = productList.find(
-                (p) => p.productId === productId
-            );
+            const cartItem = { ...selectedProduct, quantity: 1 };
+            await axios.post(import.meta.env.VITE_CART_URL, cartItem, { withCredentials: true });
 
-            if (!selectedProduct) {
-                toast.error('Product not found. Cannot add to cart.');
-                return;
-            }
+            // KILLING CUSTOM TOAST
+            toast.custom((t) => (
+                <div
+                    className={`${t.visible ? 'animate-enter' : 'animate-leave'
+                        } max-w-md w-full bg-emerald-950 border-2 border-lime-400/30 shadow-[0_20px_50px_rgba(6,78,59,0.3)] rounded-xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}
+                >
+                    <div className="flex-1 w-0 p-4">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0 pt-0.5">
+                                <div className="h-12 w-12 rounded-xl bg-lime-400 flex items-center justify-center shadow-lg shadow-lime-500/20">
+                                    <FaLeaf className="text-emerald-900 text-xl" />
+                                </div>
+                            </div>
+                            <div className="ml-4 flex-1">
+                                <p className="text-[10px] font-black text-lime-400/50 uppercase tracking-[0.2em]">
+                                    Added to Collection
+                                </p>
+                                <p className="text-lg font-black text-white leading-tight mt-0.5">
+                                    {selectedProduct.name}
+                                </p>
+                                <p className="text-xs font-bold text-lime-200/60 italic">
+                                    Curated for your shop
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-            // Construct the cart item object
-            const cartItem = {
-                image: selectedProduct.image,
-                name: selectedProduct.name,
-                desc: selectedProduct.desc,
-                price: selectedProduct.price,
-                productId: selectedProduct.productId,
-                inStock: selectedProduct.inStock,
-                quantity: 1, // Default quantity to 1 when adding to cart
-            };
+                </div>
+            ), { duration: 800 });
 
-            // Post the new cart item to the cart API
-            await axios.post(import.meta.env.VITE_CART_URL, cartItem, {
-                withCredentials: true,
-            });
-
-            toast.success('Product added to cart successfully!'); // Success notification
-            fetchCartItems(); // Refresh the cart items to update UI
+            fetchCartItems();
+            window.dispatchEvent(new Event("cartUpdated"));
         } catch (error) {
-            console.error("Add to Cart Error:", error); // Log detailed error
-            toast.error('Failed to add to cart. Please try again.'); // Show user-friendly error
+            toast.error('Error adding to cart.');
         }
     };
 
-    // Checks if a product with the given productId is already in the user's cart
-    const isInCart = (productId) => {
-        return cartItems.some((item) => item.productId === productId);
-    };
+    const isInCart = (productId) => cartItems.some((item) => item.productId === productId);
 
-    // useEffect hook to fetch initial data when component mounts
     useEffect(() => {
         getData();
         fetchCartItems();
-    }, []); // Empty dependency array means this runs once on mount
+    }, []);
 
-    // useMemo to dynamically generate unique categories from the fetched product data
-    // This re-calculates only when 'data' changes, optimizing performance.
-    const categories = useMemo(() => {
-        const uniqueCategories = new Set();
-        // Add 'All' as the default option
-        uniqueCategories.add('All');
-        // Iterate through products and add their categories to the set
-        data.forEach(p => {
-            if (p.category) { // Ensure category property exists
-                uniqueCategories.add(p.category);
-            }
-        });
-        return Array.from(uniqueCategories); // Convert Set back to an array
-    }, [data]); // Dependency: re-run when 'data' changes
-
-    // useMemo to filter and search products based on current state
-    // This re-calculates only when 'data', 'filterCategory', or 'searchTerm' changes.
     const filteredProducts = useMemo(() => {
-        return data.filter(product => {
-            // Category filter logic
-            const matchesCategory = filterCategory === 'All' || product.category === filterCategory;
+        return data.filter(product =>
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (product.desc && product.desc.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+    }, [data, searchTerm]);
 
-            // Search term filter logic (checks name and description)
-            const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                  (product.desc && product.desc.toLowerCase().includes(searchTerm.toLowerCase()));
-
-            return matchesCategory && matchesSearch; // Product must match both criteria
-        });
-    }, [data, filterCategory, searchTerm]); // Dependencies for re-calculation
-
-    // Display a loading spinner while data is being fetched
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-screen bg-gradient-to-br from-violet-50 to-purple-100 font-inter">
-                <div className="animate-spin rounded-full h-20 w-20 border-t-2 border-b-2 border-violet-500"></div>
-                <p className="ml-4 text-violet-700 text-lg">Loading products...</p>
+            <div className="flex flex-col justify-center items-center h-screen bg-[#f7fee7]">
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="w-14 h-14 border-4 border-lime-200 border-t-emerald-600 rounded-full"
+                />
+                <p className="mt-4 text-emerald-900 font-black tracking-widest animate-pulse">CURATING COLLECTION...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-100 p-4 sm:p-6 lg:p-8 font-inter">
-            <Toaster position="top-right" reverseOrder={false} />
+        <div className="min-h-screen bg-[#f7fee7] p-6 lg:p-12">
+            <Toaster position="bottom-right" />
 
-            <motion.h1
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-4xl font-extrabold text-center text-violet-800 mb-8 drop-shadow-md"
-            >
-                Our Products
-            </motion.h1>
+            {/* Header Section */}
+            <header className="max-w-7xl mx-auto text-center mb-16 relative">
+                <motion.div
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="inline-flex items-center gap-2 bg-white px-4 py-1.5 rounded-full shadow-sm border border-lime-100 mb-6"
+                >
+                    <FaLeaf className="text-lime-500 text-sm" />
+                    <span className="text-emerald-900/60 font-bold tracking-widest uppercase text-[10px]">Premium Experience</span>
+                </motion.div>
 
-            <div className="max-w-7xl mx-auto mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                {/* Search Bar Input */}
-                <div className="relative w-full sm:w-1/2">
+                <motion.h1
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-6xl md:text-8xl font-black text-emerald-950 tracking-tighter"
+                >
+                    THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-500 to-emerald-600">SHOP</span>
+                </motion.h1>
+            </header>
+
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto mb-20">
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-lime-400/20 blur-3xl group-focus-within:bg-lime-400/40 transition-all duration-700 rounded-full"></div>
                     <input
                         type="text"
-                        placeholder="Search products by name or description..."
+                        placeholder="Search our collection..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition duration-200 shadow-sm"
+                        className="relative w-full pl-16 pr-8 py-6 bg-white border-2 border-transparent focus:border-lime-400 rounded-[2rem] shadow-2xl shadow-emerald-900/5 outline-none transition-all duration-300 text-emerald-950 font-semibold placeholder:text-emerald-900/30"
                     />
-                    <RiSearchLine className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
-                </div>
-
-                {/* Category Filter Dropdown */}
-                <div className="relative w-full sm:w-1/3">
-                    <select
-                        value={filterCategory}
-                        onChange={(e) => setFilterCategory(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition duration-200 shadow-sm bg-white"
-                    >
-                        {/* Dynamically generated category options */}
-                        {categories.map(category => (
-                            <option key={category} value={category}>{category}</option>
-                        ))}
-                    </select>
-                    <RiFilterFill className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl pointer-events-none" />
-                    {/* Custom dropdown arrow using SVG */}
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                    </div>
+                    <RiSearchLine className="absolute left-6 top-1/2 transform -translate-y-1/2 text-lime-500 text-3xl group-focus-within:scale-110 transition-transform" />
                 </div>
             </div>
 
             {/* Product Grid */}
-            <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <AnimatePresence>
-                    {filteredProducts.length > 0 ? (
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10"
+            >
+                <AnimatePresence mode='popLayout'>
+                    {filteredProducts.length === 0 ? (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="col-span-full flex flex-col items-center justify-center py-20"
+                        >
+                            <div className="w-24 h-24 rounded-[2rem] bg-white shadow-xl flex items-center justify-center mb-6 rotate-12">
+                                <RiSearchLine className="text-lime-500 text-4xl" />
+                            </div>
+                            <h2 className="text-3xl font-black text-emerald-900 mb-2">No matches found</h2>
+                            <button
+                                onClick={() => setSearchTerm("")}
+                                className="mt-4 px-6 py-2 bg-emerald-900 text-lime-400 rounded-full font-bold hover:bg-emerald-800 transition shadow-lg shadow-emerald-200"
+                            >
+                                Show All Products
+                            </button>
+                        </motion.div>
+                    ) : (
                         filteredProducts.map((val) => (
                             <motion.div
-                                key={val.productId} // Unique key for each product
-                                layout // Enables smooth layout transitions with framer-motion
-                                initial={{ opacity: 0, y: 50, scale: 0.8 }} // Initial animation state
-                                animate={{ opacity: 1, y: 0, scale: 1 }} // Animation state when entering/updating
-                                exit={{ opacity: 0, y: -50, scale: 0.8 }} // Animation state when exiting
-                                transition={{ duration: 0.4 }} // Animation duration
-                                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col"
+                                key={val.productId}
+                                layout
+                                variants={itemVariants}
+                                whileHover={{ y: -10 }}
+                                className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-2xl hover:shadow-lime-200/50 transition-all duration-500 border border-lime-50 flex flex-col group relative overflow-hidden"
                             >
-                                <div className="relative h-48 sm:h-56 overflow-hidden">
-                                    <img
+                                {/* Image Container with custom gradient */}
+                                <div className="relative h-72 bg-[#f9fafb] rounded-2xl overflow-hidden mb-6 flex items-center justify-center">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-lime-100/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <motion.img
+                                        whileHover={{ scale: 1.1, rotate: -2 }}
                                         src={`${import.meta.env.VITE_PRODUCT_IMAGE_URL}/${val.image}`}
                                         alt={val.name}
-                                        className="w-full h-full object-contain rounded-t-lg mb-4 p-2"
-                                        onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/400x300/F0F4FF/6B46C1?text=Image+Error`; }}
+                                        className="w-full h-full object-contain p-10 z-10"
+                                        onError={(e) => { e.target.src = `https://placehold.co/400x400/f7fee7/064e3b?text=${val.name}`; }}
                                     />
-                                    {val.category && (
-                                        <span className="absolute top-3 left-3 bg-violet-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-                                            {val.category}
-                                        </span>
-                                    )}
+
+                                    {/* Price Tag Overlay */}
+                                    <div className="absolute top-4 right-4 bg-emerald-900 text-lime-400 px-4 py-2 rounded-2xl font-black text-sm shadow-lg">
+                                        ₹{val.price}
+                                    </div>
                                 </div>
-                                <div className="p-5 flex flex-col flex-grow">
-                                    <h2 className="text-xl font-semibold text-gray-800 mb-2">{val.name}</h2>
-                                    <p className="text-gray-600 text-sm mb-4 flex-grow">{val.desc}</p>
-                                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-                                        <span className="text-2xl font-bold text-violet-700">
-                                            ₹ {val.price}
-                                        </span>
-                                        {isInCart(val.productId) ? (
-                                            <button
-                                                disabled
-                                                className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-xl font-medium text-sm cursor-not-allowed shadow-md"
-                                            >
-                                                <FaCheckCircle />
-                                                Cart Added
-                                            </button>
+
+                                <div className="px-2 pb-2 flex flex-col flex-grow">
+                                    <h2 className="text-xl font-black text-emerald-950 mb-2 group-hover:text-lime-600 transition-colors line-clamp-1">
+                                        {val.name}
+                                    </h2>
+                                    <p className="text-emerald-800/50 text-xs font-bold leading-relaxed mb-6 line-clamp-2 italic">
+                                        {val.desc || "A premium selection curated for quality and style."}
+                                    </p>
+
+                                    <div className="mt-auto flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-emerald-900/30 uppercase tracking-widest">Status</span>
+                                            <span className={`text-xs font-bold flex items-center gap-1 ${val.inStock ? 'text-emerald-700' : 'text-red-500'}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${val.inStock ? 'bg-lime-500 animate-pulse' : 'bg-red-500'}`} />
+                                                {val.inStock ? 'Available' : 'Out of Stock'}
+                                            </span>
+                                        </div>
+
+                                        {val.inStock ? (
+                                            isInCart(val.productId) ? (
+                                                <motion.div className="bg-emerald-900 text-lime-400 p-4 rounded-2xl shadow-lg shadow-emerald-100">
+                                                    <FaCheckCircle size={20} />
+                                                </motion.div>
+                                            ) : (
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05, backgroundColor: '#a3e635' }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => addToCart(val.productId)}
+                                                    className="bg-lime-400 text-emerald-950 p-4 rounded-2xl shadow-xl shadow-lime-200 flex items-center gap-2 group/btn"
+                                                >
+                                                    <FaShoppingCart size={20} className="group-hover/btn:rotate-12 transition-transform" />
+                                                </motion.button>
+                                            )
                                         ) : (
-                                            <motion.button
-                                                whileHover={{ scale: 1.05, boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)" }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => addToCart(val.productId)}
-                                                className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl font-medium text-sm transition shadow-md"
-                                            >
-                                                <FaShoppingCart />
-                                                Add to Cart
-                                            </motion.button>
+                                            <div className="bg-gray-100 text-gray-400 p-4 rounded-2xl cursor-not-allowed">
+                                                <FaShoppingCart size={20} />
+                                            </div>
                                         )}
                                     </div>
                                 </div>
                             </motion.div>
                         ))
-                    ) : (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="col-span-full text-center py-10 text-gray-600 text-lg"
-                        >
-                            No products found matching your criteria.
-                        </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </motion.div>
         </div>
     );
 };

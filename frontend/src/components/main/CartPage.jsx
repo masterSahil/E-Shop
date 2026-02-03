@@ -1,8 +1,8 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { FaShoppingCart, FaTrashAlt, FaPlus, FaMinus, FaBoxOpen } from 'react-icons/fa';
+import { FaShoppingCart, FaTrashAlt, FaPlus, FaMinus, FaBoxOpen, FaTicketAlt, FaReceipt, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CartPage = () => {
   const [data, setData] = useState([]);
@@ -73,43 +73,80 @@ const CartPage = () => {
   const grandTotal = subtotal - discountAmount;
 
   return (
-    <section className="min-h-screen bg-gray-100 px-4 md:px-20 py-10">
-      <div className="flex items-center justify-center gap-3 mb-6">
-        <FaShoppingCart className="text-4xl text-violet-700" />
-        <h1 className="text-4xl font-bold text-violet-700">My Cart</h1>
+    <section className="min-h-screen bg-[#f7fee7] px-4 md:px-20 py-12 font-sans relative">
+      
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        onClick={() => navigate(-1)}
+        className="mb-8 flex items-center gap-2 px-5 py-2.5 bg-white/50 hover:bg-lime-400 text-emerald-900 rounded-full font-bold text-sm shadow-sm transition-all border border-lime-100 group"
+      >
+        <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+        Back to Gallery
+      </motion.button>
+
+      {/* Header Section */}
+      <div className="flex flex-col items-center mb-16">
+        <motion.div 
+            initial={{ scale: 0 }} 
+            animate={{ scale: 1 }} 
+            className="p-4 bg-lime-400 rounded-full shadow-lg shadow-lime-200 mb-4"
+        >
+          <FaShoppingCart className="text-3xl text-emerald-900" />
+        </motion.div>
+        <h1 className="text-5xl font-black text-emerald-900 tracking-tighter">
+          Shopping <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-500 to-emerald-600">Cart</span>
+        </h1>
+        <p className="text-emerald-700/60 font-bold tracking-widest uppercase text-[10px] mt-2">Review your collection</p>
       </div>
 
       {data.length > 0 ? (
-        <motion.div
-          className="flex flex-col md:flex-row gap-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="flex-1 space-y-4">
-            {data.map((item, idx) => (
-              <motion.div
-                key={idx}
-                className="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between hover:shadow-md transition"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: idx * 0.05 }}
-              >
-                <img
-                  src={`${import.meta.env.VITE_PRODUCT_IMAGE_URL}/${item.image}`}
-                  className="w-20 h-20 object-contain rounded-md"
-                  alt={item.name}
-                />
+        <div className="flex flex-col lg:flex-row gap-10 items-start max-w-7xl mx-auto">
+          
+          {/* Items List */}
+          <motion.div 
+            className="flex-1 space-y-6 w-full"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <AnimatePresence mode="popLayout">
+              {data.map((item, idx) => (
+                <motion.div
+                  key={item._id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white border border-lime-50 p-5 rounded-[2.5rem] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 hover:shadow-xl hover:shadow-lime-200/30 transition-all group"
+                >
+                  <div className="bg-[#f9fafb] p-4 rounded-[2rem] group-hover:scale-105 transition-transform flex items-center justify-center w-32 h-32 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-lime-100/50 to-transparent" />
+                    <img
+                      src={`${import.meta.env.VITE_PRODUCT_IMAGE_URL}/${item.image}`}
+                      className="w-full h-full object-contain relative z-10"
+                      alt={item.name}
+                    />
+                  </div>
 
-                <div className="flex-1 px-4">
-                  <h2 className="font-semibold">{item.name}</h2>
-                  <p className="text-sm text-gray-500">{item.desc}</p>
-                  <p className="text-sm mt-1 text-violet-700">₹ {item.price}</p>
-                  <p className={`text-xs font-medium ${item.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                    {item.inStock ? 'In Stock' : 'Out of Stock'}
-                  </p>
+                  <div className="flex-1 text-center sm:text-left">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-pulse" />
+                        <span className="text-[10px] font-black text-emerald-900/30 uppercase tracking-widest">Premium Choice</span>
+                    </div>
+                    <h2 className="text-xl font-black text-emerald-900 group-hover:text-lime-600 transition-colors">{item.name}</h2>
+                    <p className="text-xs text-emerald-800/40 font-bold italic line-clamp-1 mb-3">{item.desc || "Exquisite detail and quality."}</p>
+                    <span className="text-2xl font-black text-emerald-800 tracking-tighter">₹{item.price}</span>
+                  </div>
 
-                  <div className="flex items-center gap-2 mt-2">
-                    <button onClick={() => updateQuantity(item._id, item.quantity - 1, item.inStock)} className="bg-gray-200 rounded p-1 hover:bg-gray-300"><FaMinus size={10} /></button>
+                  {/* Quantity Controls */}
+                  <div className="flex items-center bg-[#f9fafb] rounded-2xl p-2 border border-lime-100 shadow-inner">
+                    <button 
+                        onClick={() => updateQuantity(item._id, item.quantity - 1, item.inStock)} 
+                        className="w-10 h-10 flex items-center justify-center bg-white rounded-xl hover:bg-lime-400 text-emerald-700 transition shadow-sm"
+                    >
+                        <FaMinus size={12} />
+                    </button>
                     <input
                       type="text"
                       value={item.quantity}
@@ -118,106 +155,129 @@ const CartPage = () => {
                         setData(prev => prev.map(i => i._id === item._id ? { ...i, quantity: val } : i));
                       }}
                       onBlur={() => updateQuantity(item._id, item.quantity, item.inStock)}
-                      className="w-10 text-center border border-gray-300 rounded"
+                      className="w-12 text-center bg-transparent font-black text-emerald-900 focus:outline-none text-lg"
                     />
-                    <button onClick={() => updateQuantity(item._id, item.quantity + 1, item.inStock)} className="bg-gray-200 rounded p-1 hover:bg-gray-300"><FaPlus size={10} /></button>
+                    <button 
+                        onClick={() => updateQuantity(item._id, item.quantity + 1, item.inStock)} 
+                        className="w-10 h-10 flex items-center justify-center bg-white rounded-xl hover:bg-lime-400 text-emerald-700 transition shadow-sm"
+                    >
+                        <FaPlus size={12} />
+                    </button>
                   </div>
-                </div>
 
-                <button
-                  onClick={() => handleDelete(item._id)}
-                  title="Remove from Cart"
-                  className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md shadow-md transition"
-                >
-                  <FaTrashAlt />
-                </button>
-              </motion.div>
-            ))}
-          </div>
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="p-4 text-emerald-900/20 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
+                  >
+                    <FaTrashAlt size={18} />
+                  </button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
-          {/* Billing Summary */}
+            <button
+              onClick={handleClearCart}
+              className="mt-4 w-full py-4 text-emerald-900/40 font-bold text-xs uppercase tracking-widest hover:text-red-500 transition-colors border-2 border-dashed border-lime-200 rounded-[2rem] hover:border-red-200"
+            >
+              Empty entire bag
+            </button>
+          </motion.div>
+
+          {/* Billing Sidebar */}
           <motion.div
-            className="sticky top-24 h-max self-start"
+            className="lg:sticky lg:top-8 w-full lg:w-[400px]"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
           >
-            <div className="w-full md:w-[300px] bg-white p-6 rounded-xl shadow-md">
-              <h2 className="text-xl font-bold text-violet-700 mb-3">Billing Summary</h2>
-              <div className="space-y-2 mb-3">
-                {data.map((item, i) => (
-                  <div key={i} className="flex justify-between text-sm border-b pb-1">
-                    <span>{item.name}</span>
-                    <span>x{item.quantity}</span>
-                  </div>
-                ))}
+            <div className="bg-emerald-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-lime-400/10 rounded-full blur-[60px]"></div>
+              
+              <div className="flex items-center gap-3 mb-8">
+                <FaReceipt className="text-lime-400 text-xl" />
+                <h2 className="text-2xl font-black tracking-tighter uppercase">Summary</h2>
               </div>
 
-              <div className="text-sm text-gray-600 border-t pt-3 space-y-1">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>₹ {subtotal.toFixed(2)}</span>
+              <div className="space-y-5 mb-10">
+                <div className="flex justify-between text-emerald-200/50 font-bold text-sm">
+                  <span>SUBTOTAL</span>
+                  <span className="text-white">₹{subtotal.toLocaleString()}</span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex justify-between text-green-600 font-medium">
-                    <span>Discount (10%):</span>
-                    <span>-₹ {discountAmount.toFixed(2)}</span>
+                  <div className="flex justify-between text-lime-400 font-bold text-sm">
+                    <span>DISCOUNT (10%)</span>
+                    <span>-₹{discountAmount.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-base pt-1 border-t mt-2">
-                  <span>Total:</span>
-                  <span>₹ {grandTotal.toFixed(2)}</span>
+                <div className="flex justify-between text-emerald-200/50 font-bold text-sm">
+                    <span>SHIPPING</span>
+                    <span className="text-lime-400 italic">FREE</span>
                 </div>
-                <div className="text-xs text-gray-500">Items: {totalQty}</div>
+                <div className="h-[1px] bg-emerald-800/60 my-6"></div>
+                <div className="flex justify-between items-end">
+                  <span className="text-xs text-emerald-300 font-black uppercase tracking-widest">Total</span>
+                  <span className="text-4xl font-black text-white tracking-tighter">₹{grandTotal.toLocaleString()}</span>
+                </div>
               </div>
 
-              {/* Coupon */}
-              <div className="mt-4">
+              {/* Coupon UI */}
+              <div className="relative mb-8">
                 <input
                   type="text"
-                  placeholder="Enter coupon code"
+                  placeholder="COUPON CODE"
                   value={coupon}
                   onChange={(e) => setCoupon(e.target.value)}
-                  className="border border-gray-300 px-3 py-2 w-full rounded mb-2 text-sm"
+                  className="w-full bg-emerald-950/50 text-white pl-6 pr-24 py-5 rounded-2xl outline-none border border-emerald-800 focus:border-lime-400 font-bold text-sm tracking-widest placeholder:text-emerald-800"
                 />
                 <button
                   onClick={handleCoupon}
-                  className="w-full bg-violet-600 text-white py-2 rounded hover:bg-violet-700 transition text-sm"
+                  className="absolute right-2 top-2 bottom-2 bg-lime-400 text-emerald-900 px-5 rounded-xl text-[10px] font-black hover:bg-white transition-colors uppercase tracking-widest"
                 >
-                  Apply Coupon
+                  Apply
                 </button>
               </div>
 
               <button
-                onClick={() => window.print()}
-                className="mt-4 w-full py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded transition"
+                className="w-full bg-lime-400 text-emerald-900 py-5 rounded-2xl font-black text-lg shadow-xl shadow-emerald-950/40 hover:bg-white hover:scale-[1.02] active:scale-95 transition-all mb-6 uppercase tracking-tighter"
               >
-                Print Bill
+                Checkout Now
+              </button>
+
+              <button
+                onClick={() => window.print()}
+                className="w-full py-2 text-[10px] text-emerald-400 font-black tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2 uppercase"
+              >
+                Print Invoice
               </button>
             </div>
-
-            <button
-              onClick={handleClearCart}
-              className="bg-red-100 hover:bg-red-200 text-red-600 border border-red-400 py-2 px-4 rounded text-sm font-semibold transition mt-4 w-full"
-            >
-              Clear All Cart
-            </button>
           </motion.div>
-        </motion.div>
+
+        </div>
       ) : (
+        /* Empty State */
         <motion.div
-          className="text-center mt-20 flex flex-col items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          className="text-center py-20 px-8 bg-white rounded-[3.5rem] shadow-xl shadow-lime-100 border border-lime-50 max-w-2xl mx-auto"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
         >
-          <FaBoxOpen className="text-[80px] text-gray-400 mb-4 animate-bounce" />
-          <h2 className="text-2xl font-semibold text-gray-600 mb-2">Your Cart is Empty</h2>
-          <p className="text-gray-500 text-sm mb-4">Start adding items to your cart to see them here.</p>
+          <div className="relative inline-block mb-8">
+            <div className="w-32 h-32 bg-[#f7fee7] rounded-[2.5rem] flex items-center justify-center rotate-12 shadow-lg">
+                <FaBoxOpen className="text-5xl text-lime-500" />
+            </div>
+            <motion.div 
+                animate={{ y: [0, -10, 0] }} 
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute -top-4 -right-4 bg-emerald-900 text-lime-400 p-4 rounded-full shadow-2xl"
+            >
+                <FaShoppingCart size={24}/>
+            </motion.div>
+          </div>
+          <h2 className="text-4xl font-black text-emerald-900 mb-3 tracking-tighter">Your bag is empty</h2>
+          <p className="text-emerald-800/40 font-bold italic mb-10">Seems like you haven't discovered our premium pieces yet.</p>
           <button
             onClick={() => navigate('/')}
-            className="bg-violet-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-violet-700 transition"
+            className="bg-emerald-900 text-lime-400 px-12 py-5 rounded-3xl font-black shadow-2xl shadow-emerald-100 hover:bg-emerald-800 transition-all active:scale-95 uppercase tracking-widest text-sm"
           >
-            Browse Products
+            Explore Collection
           </button>
         </motion.div>
       )}
