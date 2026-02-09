@@ -11,14 +11,12 @@ const Products = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Animation Variants for the staggered "Flow" effect
+    // Animation Variants
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            transition: {
-                staggerChildren: 0.08
-            }
+            transition: { staggerChildren: 0.08 }
         }
     };
 
@@ -28,17 +26,46 @@ const Products = () => {
             opacity: 1,
             y: 0,
             scale: 1,
-            transition: {
-                type: "spring",
-                stiffness: 200,
-                damping: 18
-            }
+            transition: { type: "spring", stiffness: 200, damping: 18 }
         },
         exit: {
             opacity: 0,
             scale: 0.9,
             transition: { duration: 0.2 }
         }
+    };
+
+    // --- UNIFIED LEAF TOAST FUNCTION (Handles both Add & Remove) ---
+    const showLeafToast = (title, productName) => {
+        toast.custom((t) => (
+            <motion.div
+                initial={{ opacity: 0, y: 50, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                className={`${t.visible ? 'flex' : 'hidden'} max-w-md w-full bg-emerald-950 border-2 border-lime-400/30 shadow-[0_20px_50px_rgba(6,78,59,0.3)] rounded-xl pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden`}
+            >
+                <div className="flex-1 w-0 p-4">
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0 pt-0.5">
+                            <div className="h-12 w-12 rounded-xl bg-lime-400 flex items-center justify-center shadow-lg shadow-lime-500/20">
+                                <FaLeaf className="text-emerald-900 text-xl" />
+                            </div>
+                        </div>
+                        <div className="ml-4 flex-1">
+                            <p className="text-[10px] font-black text-lime-400/50 uppercase tracking-[0.2em]">
+                                {title}
+                            </p>
+                            <p className="text-lg font-black text-white leading-tight mt-0.5 line-clamp-1">
+                                {productName}
+                            </p>
+                            <p className="text-xs font-bold text-lime-200/60 italic">
+                                Curated for your shop
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        ), { duration: 2000 });
     };
 
     const getData = async () => {
@@ -71,42 +98,51 @@ const Products = () => {
             if (!selectedProduct) return;
 
             const cartItem = { ...selectedProduct, quantity: 1 };
+            
+            // Optimistic UI Update: Show checkmark immediately
+            setCartItems(prev => [...prev, { ...cartItem, productId: productId, _id: 'temp-' + Date.now() }]);
+
+            // Show Toast
+            showLeafToast("Added to Collection", selectedProduct.name);
+
+            // API Call
             await axios.post(import.meta.env.VITE_CART_URL, cartItem, { withCredentials: true });
-
-            // KILLING CUSTOM TOAST
-            toast.custom((t) => (
-                <div
-                    className={`${t.visible ? 'animate-enter' : 'animate-leave'
-                        } max-w-md w-full bg-emerald-950 border-2 border-lime-400/30 shadow-[0_20px_50px_rgba(6,78,59,0.3)] rounded-xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}
-                >
-                    <div className="flex-1 w-0 p-4">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0 pt-0.5">
-                                <div className="h-12 w-12 rounded-xl bg-lime-400 flex items-center justify-center shadow-lg shadow-lime-500/20">
-                                    <FaLeaf className="text-emerald-900 text-xl" />
-                                </div>
-                            </div>
-                            <div className="ml-4 flex-1">
-                                <p className="text-[10px] font-black text-lime-400/50 uppercase tracking-[0.2em]">
-                                    Added to Collection
-                                </p>
-                                <p className="text-lg font-black text-white leading-tight mt-0.5">
-                                    {selectedProduct.name}
-                                </p>
-                                <p className="text-xs font-bold text-lime-200/60 italic">
-                                    Curated for your shop
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            ), { duration: 800 });
-
-            fetchCartItems();
+            
+            // Sync actual data in background
+            fetchCartItems(); 
             window.dispatchEvent(new Event("cartUpdated"));
         } catch (error) {
             toast.error('Error adding to cart.');
+            // Revert on failure
+            fetchCartItems();
+        }
+    };
+
+    const removeFromCart = async (productId) => {
+        try {
+            const cart_Item = cartItems.find(p => p.productId === productId);
+            if (!cart_Item) return;
+
+            const productName = cart_Item.name;
+
+            // Optimistic UI Update: Remove checkmark immediately
+            setCartItems(prev => prev.filter(item => item.productId !== productId));
+
+            // Show Toast
+            showLeafToast("Removed from Collection", productName);
+
+            // API Call
+            if (cart_Item._id && !cart_Item._id.startsWith('temp-')) {
+                 await axios.delete(`${import.meta.env.VITE_CART_URL}/${cart_Item._id}`, { withCredentials: true });
+            }
+
+            // Sync actual data
+            fetchCartItems();
+            window.dispatchEvent(new Event("cartUpdated"));
+        } catch (error) {
+            console.log(error);
+            toast.error("Remove failed");
+            fetchCartItems();
         }
     };
 
@@ -139,7 +175,7 @@ const Products = () => {
 
     return (
         <div className="min-h-screen bg-[#f7fee7] p-6 lg:p-12">
-            <Toaster position="bottom-right" />
+            <Toaster position="bottom-right" reverseOrder={false} />
 
             {/* Header Section */}
             <header className="max-w-7xl mx-auto text-center mb-16 relative">
@@ -210,7 +246,7 @@ const Products = () => {
                                 whileHover={{ y: -10 }}
                                 className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-2xl hover:shadow-lime-200/50 transition-all duration-500 border border-lime-50 flex flex-col group relative overflow-hidden"
                             >
-                                {/* Image Container with custom gradient */}
+                                {/* Image Container */}
                                 <div className="relative h-72 bg-[#f9fafb] rounded-2xl overflow-hidden mb-6 flex items-center justify-center">
                                     <div className="absolute inset-0 bg-gradient-to-br from-lime-100/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <motion.img
@@ -220,8 +256,6 @@ const Products = () => {
                                         className="w-full h-full object-contain p-10 z-10"
                                         onError={(e) => { e.target.src = `https://placehold.co/400x400/f7fee7/064e3b?text=${val.name}`; }}
                                     />
-
-                                    {/* Price Tag Overlay */}
                                     <div className="absolute top-4 right-4 bg-emerald-900 text-lime-400 px-4 py-2 rounded-2xl font-black text-sm shadow-lg">
                                         ₹{val.price}
                                     </div>
@@ -235,6 +269,7 @@ const Products = () => {
                                         {val.desc || "A premium selection curated for quality and style."}
                                     </p>
 
+                                    {/* Action Row */}
                                     <div className="mt-auto flex items-center justify-between gap-4">
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-black text-emerald-900/30 uppercase tracking-widest">Status</span>
@@ -246,21 +281,30 @@ const Products = () => {
 
                                         {val.inStock ? (
                                             isInCart(val.productId) ? (
-                                                <motion.div className="bg-emerald-900 text-lime-400 p-4 rounded-2xl shadow-lg shadow-emerald-100">
+                                                <motion.button 
+                                                    key="remove-btn"
+                                                    onClick={() => removeFromCart(val.productId)}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    // Added shrink-0 to prevent button from being crushed by long text
+                                                    className="shrink-0 bg-emerald-900 text-lime-400 p-4 rounded-2xl shadow-lg shadow-emerald-100 hover:bg-emerald-800 transition-colors"
+                                                >
                                                     <FaCheckCircle size={20} />
-                                                </motion.div>
+                                                </motion.button>
                                             ) : (
                                                 <motion.button
+                                                    key="add-btn"
                                                     whileHover={{ scale: 1.05, backgroundColor: '#a3e635' }}
                                                     whileTap={{ scale: 0.95 }}
                                                     onClick={() => addToCart(val.productId)}
-                                                    className="bg-lime-400 text-emerald-950 p-4 rounded-2xl shadow-xl shadow-lime-200 flex items-center gap-2 group/btn"
+                                                    // Added shrink-0 here as well
+                                                    className="shrink-0 bg-lime-400 text-emerald-950 p-4 rounded-2xl shadow-xl shadow-lime-200 flex items-center gap-2 group/btn"
                                                 >
                                                     <FaShoppingCart size={20} className="group-hover/btn:rotate-12 transition-transform" />
                                                 </motion.button>
                                             )
                                         ) : (
-                                            <div className="bg-gray-100 text-gray-400 p-4 rounded-2xl cursor-not-allowed">
+                                            <div className="shrink-0 bg-gray-100 text-gray-400 p-4 rounded-2xl cursor-not-allowed">
                                                 <FaShoppingCart size={20} />
                                             </div>
                                         )}

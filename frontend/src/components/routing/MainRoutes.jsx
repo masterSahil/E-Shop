@@ -56,10 +56,10 @@ const MainRoutes = () => {
 
       {!login && <Route path="/login" element={<LoginForm />} />}
 
-      <Route path="/edit-product/:id" element={<EditProduct />} />
-      <Route path="/cart" element={!isAdmin? <CartPage />: <AdminCart />} />
-      <Route path="/setting" element={<SettingsPage />} />
-      <Route path="/about" element={<About />} />
+      <Route path="/edit-product/:id" element={login ? <EditProduct /> : <Navigate to="/" />} />
+      <Route path="/cart" element={login ? (isAdmin ? <AdminCart /> : <CartPage />) : <Navigate to="/" /> }/>
+      <Route path="/setting" element={login? <SettingsPage /> : <Navigate to="/" /> } />
+      <Route path="/about" element={login? <About /> : <Navigate to="/" /> } />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

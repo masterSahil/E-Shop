@@ -14,7 +14,6 @@ const LoginForm = () => {
   const loginContext = useContext(LoginContext);
   const URL = import.meta.env.VITE_COMPARE_URL;
 
-  // Validation logic - UNTOUCHED
   const validate = () => {
     const errs = {};
     if (!data.email.trim()) {
@@ -31,7 +30,7 @@ const LoginForm = () => {
     return Object.keys(errs).length === 0;
   };
 
-  // Submit logic - UNTOUCHED
+  // Submit
   const submit = async () => {
     if (!validate()) return;
     setLoading(true);
@@ -49,7 +48,7 @@ const LoginForm = () => {
     }
   };
 
-  // checkUser logic - UNTOUCHED
+  // checkUser
   const checkUser = async () => {
     try {
       const res = await axios.get(import.meta.env.VITE_API_URL);
