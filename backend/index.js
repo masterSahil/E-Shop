@@ -17,7 +17,7 @@ app.listen(PORT, () => {
 connectDB();
 
 app.use(cors({
-    origin: 'https://e-shop-pearl-gamma.vercel.app/',
+    origin: 'https://e-shop-pearl-gamma.vercel.app',
     credentials: true,
 }));
 app.use('/uploads', express.static('uploads'));
