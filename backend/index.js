@@ -20,9 +20,11 @@ app.use(cors({
     origin: 'https://e-shop-pearl-gamma.vercel.app',
     credentials: true,
 }));
-app.use('/uploads', express.static('uploads'));
-app.use(express.json());
+
 app.use(cookieParser());
+app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+
 app.use('/', userRouter);
 app.use('/', productRouter);
 app.use('/', loginVerify);

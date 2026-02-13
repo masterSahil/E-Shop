@@ -1,4 +1,3 @@
-// routes/loginVerify.js
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -11,7 +10,7 @@ router.get('/loginVerify', async (req, res) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'No token found',
+        message: 'Not logged in',
       });
     }
 
@@ -19,21 +18,21 @@ router.get('/loginVerify', async (req, res) => {
     const user = await User.findById(decoded.id).select('-password');
 
     if (!user) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
-        message: 'User not found',
+        message: 'Invalid token',
       });
     }
 
     res.status(200).json({
       success: true,
-      token,
-      user,
+      user, token,
     });
+
   } catch (error) {
-    res.status(500).json({
+    return res.status(401).json({
       success: false,
-      message: error.message,
+      message: 'Session expired' + error.message,
     });
   }
 });
