@@ -77,8 +77,8 @@ module.exports.compare = async (req, res) => {
       res.cookie("authToken", token, {
         maxAge: ms("7d"),
         httpOnly: true,
-        sameSite: "lax",
-        secure: false,
+        sameSite: "none",
+        secure: true,
       });
 
       await User.findByIdAndUpdate(user._id, { token: token });
@@ -94,7 +94,7 @@ module.exports.compare = async (req, res) => {
 
 module.exports.removeCookie = async (req, res) => {
     try {
-        res.clearCookie("authToken", { httpOnly: true, sameSite: 'lax', secure: false });
+        res.clearCookie("authToken", { httpOnly: true, sameSite: "none", secure: true });
         res.status(200).json({ success: true, message: "Logged out successfully" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
