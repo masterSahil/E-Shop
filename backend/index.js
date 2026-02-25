@@ -9,6 +9,8 @@ const productRouter = require('./routes/productRoutes');
 const loginVerify = require('./routes/loginVerify');
 const cartRouter = require('./routes/cartRoutes');
 
+const healthRouter = require('./routes/healthRoutes');
+
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`App is Listening on Port ${PORT}`);
@@ -17,7 +19,7 @@ app.listen(PORT, () => {
 connectDB();
 
 app.use(cors({
-    origin: 'https://e-shop-pearl-gamma.vercel.app',
+    origin: process.env.LIVE_URL,
     credentials: true,
 }));
 
@@ -29,3 +31,4 @@ app.use('/', userRouter);
 app.use('/', productRouter);
 app.use('/', loginVerify);
 app.use('/', cartRouter);
+app.use('/', healthRouter);
